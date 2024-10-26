@@ -3,87 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy Emotion Detection</title>
+    <title>Face Detection App</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
         }
-
-        h1 {
-            color: #333;
+        #smileys {
+            font-size: 48px;
+            margin: 20px;
         }
-
-        video {
-            border: 2px solid #333;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
         #result {
+            margin-top: 20px;
             font-size: 24px;
-            color: #333;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Happy Emotion Detection</h1>
-    <video id="video" width="640" height="480" autoplay></video>
-    <div id="result">Emotion: <span id="emotion">None</span></div>
+    <h1>Face Detector: Happy or Sad</h1>
+    <div id="smileys">
+        <span id="happy" style="cursor: pointer;">🙂</span>
+        <span id="sad" style="cursor: pointer;">🙁</span>
+    </div>
+    <button id="detect">Detect Emotion</button>
+    <div id="result"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
     <script>
-        // Load models automatically from a URL
-        async function loadModels() {
-            const modelPath = 'https://your-domain.com/models/'; // Make sure to replace this with your model hosting URL
-            await faceapi.nets.tinyFaceDetector.loadFromUri(modelPath);
-            await faceapi.nets.faceLandmark68Net.loadFromUri(modelPath);
-            await faceapi.nets.faceExpressionNet.loadFromUri(modelPath);
-        }
+        const resultDiv = document.getElementById("result");
+        let selectedEmotion = "";
 
-        async function startVideo() {
-            const video = document.getElementById('video');
-            const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
-            video.srcObject = stream;
+        // Event listeners for smileys
+        document.getElementById("happy").addEventListener("click", () => {
+            selectedEmotion = "Happy";
+            resultDiv.textContent = "Selected Emotion: Happy 🙂";
+        });
 
-            // Start detecting faces
-            video.addEventListener('play', async () => {
-                const canvas = faceapi.createCanvasFromMedia(video);
-                document.body.append(canvas);
-                const displaySize = { width: video.width, height: video.height };
-                faceapi.matchDimensions(canvas, displaySize);
+        document.getElementById("sad").addEventListener("click", () => {
+            selectedEmotion = "Sad";
+            resultDiv.textContent = "Selected Emotion: Sad 🙁";
+        });
 
-                setInterval(async () => {
-                    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
-                    const resizedDetections = faceapi.resizeResults(detections, displaySize);
-                    canvas.width = displaySize.width;
-                    canvas.height = displaySize.height;
-                    faceapi.draw.drawDetections(canvas, resizedDetections);
-                    faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
-                    
-                    // Check for the presence of a happy expression
-                    if (detections.length > 0) {
-                        const expressions = detections[0].expressions;
-                        const happyProbability = expressions.happy;
-
-                        document.getElementById('emotion').textContent = happyProbability > 0.5 ? 'Happy' : 'Not Happy';
-                    } else {
-                        document.getElementById('emotion').textContent = 'None';
-                    }
-                }, 100);
-            });
-        }
-
-        (async function() {
-            await loadModels();
-            await startVideo();
-        })();
+        // Event listener for the detect button
+        document.getElementById("detect").addEventListener("click", () => {
+            if (selectedEmotion) {
+                alert("Detected Emotion: " + selectedEmotion);
+            } else  {
+                alert("Please select an emotion first!");
+            }
+        });
     </script>
 </body>
 </html>
